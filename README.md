@@ -4,11 +4,7 @@ See [CZII - CryoET Object Identification](https://www.kaggle.com/competitions/cz
 
 ## Poetry
 
-Poetry can be initialized with `poetry init`. The `pyproject.toml` file can be updated with the following command:
-
-```
-poetry add --dev black flake8 isort mypy pylint pytest pytest-cov pytest-mock
-```
+Poetry can be loaded with `poetry update`.
 
 For Zed, Poetry can be recognized by its LSP with the following command:
 
