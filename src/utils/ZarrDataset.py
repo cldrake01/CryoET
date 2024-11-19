@@ -2,6 +2,7 @@ import torch
 from torch.utils.data import Dataset
 import zarr
 
+
 class ZarrDataset(Dataset):
     def __init__(self, path):
         self.path = path
