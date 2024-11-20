@@ -12,20 +12,23 @@ import torch
 import numpy as np
 
 # Define the path to the main folder
-base_dir = "/Users/jackcerullo/Documents/GitHub/CryoET/CryoET Object Identification/train/static/ExperimentRuns/TS_5_4/VoxelSpacing10.000"
+base_dir = "/Users/jackcerullo/Documents/GitHub/CryoET/CryoET Object Identification/train/static/ExperimentRuns/"
+copy_path = "/Users/jackcerullo/Documents/GitHub/CryoET/CryoET Object Identification copy/train/static/ExperimentRuns"
 
 
 # Example of a function to load a .zarr file into a PyTorch tensor
 def load_zarr_to_tensor(zarr_path):
     # Open the .zarr file using zarr
-    store = zarr.open(zarr_path, mode="r")
+    store = zarr.open_group(copy_path, mode="w")
+    store.create_dataset("train", shape=(512, 512), data=0)
+    print(*store["train"])
+    print("that worked")
 
     # Find the .zarray file, which contains the data
     # This assumes that the data is stored in the root of the .zarr file
-    data = store[:]
 
     # Convert to numpy array, then to a PyTorch tensor
-    return torch.tensor(data)
+    # return torch.tensor(data)
 
 
 # Example: Loading data from 'isonetcorrected.zarr'
