@@ -21,7 +21,8 @@ def load_zarr_to_tensor(zarr_path):
     # Open the .zarr file using zarr
     store = zarr.open_group(copy_path, mode="w")
     store.create_dataset("train", shape=(512, 512), data=0)
-    print(*store["train"])
+    print(store["train"])
+    print(*store.items())
     print("that worked")
 
     # Find the .zarray file, which contains the data
