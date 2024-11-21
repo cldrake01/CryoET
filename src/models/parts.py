@@ -84,6 +84,7 @@ class OutConv(nn.Module):
     def forward(self, x):
         return self.conv(x)
 
+
 class DoubleConv3D(nn.Module):
     """
     3x3 Convolution -> Batch Normalization -> ReLU -> 3x3 Convolution -> Batch Normalization -> ReLU
@@ -105,6 +106,7 @@ class DoubleConv3D(nn.Module):
     def forward(self, x):
         return self.double_conv_3d(x)
 
+
 class Down3D(nn.Module):
     """
     Max Pool 2x2 -> Double Convolution
@@ -120,6 +122,7 @@ class Down3D(nn.Module):
     def forward(self, x):
         return self.maxpool_conv_3d(x)
 
+
 class Up3D(nn.Module):
     """
     Transpose Convolution + Concatenation -> Double Convolution
@@ -130,7 +133,9 @@ class Up3D(nn.Module):
         super().__init__()
 
         if trilinear:
-            self.up_3d = nn.Upsample(scale_factor=2, mode="trilinear", align_corners=True)
+            self.up_3d = nn.Upsample(
+                scale_factor=2, mode="trilinear", align_corners=True
+            )
             self.conv_3d = DoubleConv3D(in_channels, out_channels, in_channels // 2)
         else:
             self.up_3d = nn.ConvTranspose3d(
@@ -145,11 +150,19 @@ class Up3D(nn.Module):
         diffZ = x2.size()[4] - x1.size()[4]
         x1 = F.pad(
             x1,
-            [diffX // 2, diffX - diffX // 2, diffY // 2, diffY - diffY // 2, diffZ // 2, diffZ - diffZ // 2],
+            [
+                diffX // 2,
+                diffX - diffX // 2,
+                diffY // 2,
+                diffY - diffY // 2,
+                diffZ // 2,
+                diffZ - diffZ // 2,
+            ],
         )
 
         x = torch.cat([x2, x1], dim=1)
         return self.conv_3d(x)
+
 
 class OutConv3D(nn.Module):
     """
@@ -168,6 +181,7 @@ class ResidualBlock(nn.Module):
     """
     Create residual connections between different blocks
     """
+
     def __init__(self, in_channels, out_channels):
         super(ResidualBlock, self).__init__()
         self.double_conv = DoubleConv(in_channels, out_channels)
@@ -176,8 +190,10 @@ class ResidualBlock(nn.Module):
     def forward(self, x):
         return self.double_conv(x) + self.residual(x)
 
+
 class ResidualBlock3D(nn.Module):
     """3D Residual Block"""
+
     def __init__(self, in_channels, out_channels):
         super(ResidualBlock3D, self).__init__()
         self.double_conv = DoubleConv3D(in_channels, out_channels)
@@ -186,10 +202,12 @@ class ResidualBlock3D(nn.Module):
     def forward(self, x):
         return self.double_conv(x) + self.residual(x)
 
+
 class DeepSupervision(nn.Module):
     """
     helps intermediate outputs contribute to loss
     """
+
     def __init__(self, out_channels):
         super(DeepSupervision, self).__init__()
         self.out_conv = nn.Conv2d(out_channels, 1, kernel_size=1)
@@ -197,16 +215,19 @@ class DeepSupervision(nn.Module):
     def forward(self, x):
         return self.out_conv(x)
 
+
 class DeepSupervision3D(nn.Module):
     """
     helps intermediate outputs contribute to loss
     """
+
     def __init__(self, out_channels):
         super(DeepSupervision3D, self).__init__()
         self.out_conv = nn.LazyConv3d(out_channels, 1)
 
     def forward(self, x):
         return self.out_conv(x)
+
 
 class AttentionBlock(nn.Module):
     """
@@ -215,8 +236,12 @@ class AttentionBlock(nn.Module):
 
     def __init__(self, in_channels, gating_channels, inter_channels):
         super(AttentionBlock, self).__init__()
-        self.W = nn.Conv2d(in_channels, inter_channels, kernel_size=1, stride=1, padding=0)
-        self.gate = nn.Conv2d(gating_channels, inter_channels, kernel_size=1, stride=1, padding=0)
+        self.W = nn.Conv2d(
+            in_channels, inter_channels, kernel_size=1, stride=1, padding=0
+        )
+        self.gate = nn.Conv2d(
+            gating_channels, inter_channels, kernel_size=1, stride=1, padding=0
+        )
         self.psi = nn.Conv2d(inter_channels, 1, kernel_size=1, stride=1, padding=0)
         self.relu = nn.ReLU(inplace=True)
         self.sigmoid = nn.Sigmoid()
@@ -228,6 +253,7 @@ class AttentionBlock(nn.Module):
         psi_f = self.sigmoid(self.psi(f))
         return x * psi_f
 
+
 class AttentionBlock3D(nn.Module):
     """
     Standard 3Dattention block to help model find important parts of an image
@@ -235,8 +261,12 @@ class AttentionBlock3D(nn.Module):
 
     def __init__(self, in_channels, gating_channels, inter_channels):
         super(AttentionBlock3D, self).__init__()
-        self.W = nn.Conv3d(in_channels, inter_channels, kernel_size=1, stride=1, padding=0)
-        self.gate = nn.Conv3d(gating_channels, inter_channels, kernel_size=1, stride=1, padding=0)
+        self.W = nn.Conv3d(
+            in_channels, inter_channels, kernel_size=1, stride=1, padding=0
+        )
+        self.gate = nn.Conv3d(
+            gating_channels, inter_channels, kernel_size=1, stride=1, padding=0
+        )
         self.psi = nn.Conv3d(inter_channels, 1, kernel_size=1, stride=1, padding=0)
         self.relu = nn.ReLU(inplace=True)
         self.sigmoid = nn.Sigmoid()
