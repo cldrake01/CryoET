@@ -32,7 +32,6 @@ def groups_from(directory: str) -> list[Group]:
     # Use a list comprehension to open all zarr files in the directory
     def f(x):
         print(f"Opened {x}")
-        logging.info(f"Opened {x}")
         return zarr.open_group(x)
 
     return [
