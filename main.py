@@ -1,7 +1,9 @@
-import logging
 import os
+from typing import Iterable
 
+import torch
 import zarr
+from torch import Tensor
 from torch.utils.data import DataLoader
 from zarr import Group
 from zarrdataset import ZarrDataset
@@ -20,19 +22,11 @@ directory = "CryoET Object Identification/train/static/"
 
 
 def groups_from(directory: str) -> list[Group]:
-    # zarr_dirs = []
-    # for root, folders, _ in os.walk(directory):
-    #     for folder in folders:
-    #         if folder.endswith(".zarr"):
-    #             g = zarr.open_group(os.path.join(root, folder))
-    #             print(f"Opened {os.path.join(root, folder)}")
-    #             print(f"{g.tree() = },\n{g.info = }")
-    #             zarr_dirs.append(g)
-    # return zarr_dirs
-    # Use a list comprehension to open all zarr files in the directory
-    def f(x):
-        print(f"Opened {x}")
-        return zarr.open_group(x)
+    def f(path: str) -> Group:
+        group = zarr.open(path, mode="r")
+        # Uncomment to print the group info and tree
+        # print("\n".join((f"{group.info = }", f"{group.tree() = }")))
+        return group
 
     return [
         f(os.path.join(root, folder))
@@ -42,7 +36,16 @@ def groups_from(directory: str) -> list[Group]:
     ]
 
 
+def tensors_from(groups: Iterable[Group]) -> list[Tensor]:
+    # Old
+    # return [torch.tensor(group[x][:]) for x in group.array_keys()]
+    return [
+        torch.tensor(group.array_keys()[index][:]) for index, group in enumerate(groups)
+    ]
+
+
 groups = groups_from(directory)
+tensors = tensors_from(groups[0])
 
 dataset = ZarrDataset(
     dict(
@@ -53,7 +56,7 @@ dataset = ZarrDataset(
     )
 )
 
-dataloader = DataLoader(dataset)
+dataloader = DataLoader(dataset, batch_size=1, shuffle=False)
 
 for x in dataloader:
     print(x.shape)
